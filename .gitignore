@@ -175,7 +175,10 @@ tags
 
 wandb
 motion-models/
-outputs/
+output_frames/
+output_videos/
+output_gifs/
 images/
 output.gif
 output/
+checkpoints/

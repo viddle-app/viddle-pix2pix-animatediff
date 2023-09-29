@@ -14,3 +14,4 @@ lpips
 bitsandbytes
 pytorch-lightning
 tensorboard
+imageio[ffmpeg]

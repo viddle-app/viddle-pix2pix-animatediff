@@ -589,16 +589,11 @@ class UNet3DConditionModel(ModelMixin, ConfigMixin):
         return UNet3DConditionOutput(sample=sample)
 
     @classmethod
-    def from_pretrained_2d(cls, pretrained_model_path, subfolder=None, unet_additional_kwargs=None):
-        if subfolder is not None:
-            pretrained_model_path = os.path.join(pretrained_model_path, subfolder)
-        print(f"loaded temporal unet's pretrained weights from {pretrained_model_path} ...")
+    def from_pretrained_unet(cls, unet, 
+                           unet_additional_kwargs=None):
 
-        config_file = os.path.join(pretrained_model_path, 'config.json')
-        if not os.path.isfile(config_file):
-            raise RuntimeError(f"{config_file} does not exist")
-        with open(config_file, "r") as f:
-            config = json.load(f)
+
+        config = unet.config
         config["_class_name"] = cls.__name__
         config["down_block_types"] = [
             "CrossAttnDownBlock3D",
@@ -614,12 +609,9 @@ class UNet3DConditionModel(ModelMixin, ConfigMixin):
         ]
         config["mid_block_type"] = "UNetMidBlock3DCrossAttn"
 
-        from diffusers.utils import WEIGHTS_NAME
         model = cls.from_config(config, **unet_additional_kwargs)
-        model_file = os.path.join(pretrained_model_path, WEIGHTS_NAME)
-        if not os.path.isfile(model_file):
-            raise RuntimeError(f"{model_file} does not exist")
-        state_dict = torch.load(model_file, map_location="cpu")
+
+        state_dict = unet.state_dict()
 
         m, u = model.load_state_dict(state_dict, strict=False)
         print(f"### missing keys: {len(m)}; \n### unexpected keys: {len(u)};")
